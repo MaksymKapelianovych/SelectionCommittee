@@ -2,6 +2,9 @@ package ua.vstup.dao.db.manager;
 
 import com.sun.org.apache.xalan.internal.xsltc.compiler.util.ResultTreeType;
 import org.apache.log4j.Logger;
+import ua.vstup.injector.db.DbCreator;
+import ua.vstup.injector.db.DbState;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -31,10 +34,12 @@ public class DbManager implements ConnectionManager {
         config.setPassword(resource.getString(DB_PASS));
         config.setMaximumPoolSize(getIntProperty(resource, DB_POOL_SIZE));
         config.setConnectionTimeout(getIntProperty(resource, DB_TIMEOUT));
-        config.setState(resource.getString(DB_STATE));
+        config.setState(getDbState(resource.getString(DB_STATE)));
 
         connection = DriverManager.getConnection(config.getJdbcUrl(), config.getUsername(), config.getPassword());
 
+        DbCreator creator = new DbCreator(getConnection(), config.getState());
+        creator.check(getDbName(config.getJdbcUrl()), "ua.vstup.entity");
 
         System.out.println("Connection to Store DB succesfull!");
     }
@@ -61,5 +66,22 @@ public class DbManager implements ConnectionManager {
 
     private int getIntProperty(ResourceBundle resource, String dbPoolSize) {
         return Integer.parseInt(resource.getString(dbPoolSize));
+    }
+
+    private DbState getDbState(String dbState){
+        if(dbState == null){
+            return DbState.NONE;
+        }
+        for(DbState state: DbState.values()){
+            if(state.name().toLowerCase().equals(dbState)){
+                return state;
+            }
+        }
+        return DbState.NONE;
+    }
+
+    private String getDbName(String url){
+        int index = url.lastIndexOf('/');
+        return url.substring(index + 1, url.length());
     }
 }

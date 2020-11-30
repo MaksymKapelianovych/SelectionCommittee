@@ -1,11 +1,13 @@
 package ua.vstup.dao.db.manager;
 
+import ua.vstup.injector.db.DbState;
+
 public class DbConfig {
     private String driverClassName;
     private String jdbcUrl;
     private String username;
     private String password;
-    private String state;
+    private DbState state;
     private int maximumPoolSize;
     private int connectionTimeout;
 
@@ -49,11 +51,11 @@ public class DbConfig {
         this.password = password;
     }
 
-    public String getState() {
+    public DbState getState() {
         return state;
     }
 
-    public void setState(String state) {
+    public void setState(DbState state) {
         this.state = state;
     }
 
